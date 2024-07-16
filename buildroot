@@ -1,0 +1,57 @@
+# Use a base image with essential build tools
+FROM ubuntu:20.04
+
+# Set environment variable to avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary packages
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    build-essential \
+    cpio \
+    unzip \
+    rsync \
+    wget \
+    bc \
+    gcc \
+    g++ \
+    bison \
+    flex \
+    libssl-dev \
+    u-boot-tools \
+    kmod \
+    python3 \
+    patch \
+    vim \
+    sudo \
+    device-tree-compiler
+
+# Clone the Buildroot repository
+RUN git clone https://git.buildroot.net/buildroot /buildroot
+
+# Change to the Buildroot directory
+WORKDIR /buildroot
+
+# Checkout a stable release (you can adjust the version as needed)
+RUN git checkout 2024.02
+
+# Set up a default Buildroot configuration (e.g., for Raspberry Pi 4)
+RUN make raspberrypi4_defconfig
+
+# Switch to a non-root user
+RUN useradd -ms /bin/bash buildroot
+USER buildroot
+WORKDIR /home/buildroot
+
+# Copy the Buildroot directory to the non-root user directory
+RUN cp -r /buildroot /home/buildroot/
+
+# Grant sudo privileges to the non-root user
+RUN echo 'buildroot ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Change to the non-root user's Buildroot directory
+WORKDIR /home/buildroot/buildroot
+
+# Run the build process and export the result to the /output directory
+CMD make && cp -r output /output

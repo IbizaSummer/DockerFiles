@@ -36,22 +36,8 @@ WORKDIR /buildroot
 # Checkout a stable release (you can adjust the version as needed)
 RUN git checkout 2024.02
 
-# Set up a default Buildroot configuration (e.g., for Raspberry Pi 4)
+# Set up a default Buildroot configuration for Raspberry Pi 4
 RUN make raspberrypi4_defconfig
-
-# Switch to a non-root user
-RUN useradd -ms /bin/bash buildroot
-USER buildroot
-WORKDIR /home/buildroot
-
-# Copy the Buildroot directory to the non-root user directory
-RUN cp -r /buildroot /home/buildroot/
-
-# Grant sudo privileges to the non-root user
-RUN echo 'buildroot ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
-
-# Change to the non-root user's Buildroot directory
-WORKDIR /home/buildroot/buildroot
 
 # Run the build process and export the result to the /output directory
 CMD make && cp -r output /output

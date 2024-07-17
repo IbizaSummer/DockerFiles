@@ -25,7 +25,12 @@ RUN apt-get update && \
     patch \
     vim \
     sudo \
-    device-tree-compiler
+    device-tree-compiler \
+    libncurses-dev \
+    python3-distutils \
+    pkg-config \
+    libncurses5-dev \
+    qemu-system-x86
 
 # Clone the Buildroot repository
 RUN git clone https://git.buildroot.net/buildroot /buildroot
@@ -36,8 +41,11 @@ WORKDIR /buildroot
 # Checkout a stable release (you can adjust the version as needed)
 RUN git checkout 2024.02
 
-# Set up a default Buildroot configuration for Raspberry Pi 4
-RUN make raspberrypi4_defconfig
+# Set up a default Buildroot configuration for QEMU x86_64
+RUN make qemu_x86_64_defconfig
 
 # Run the build process and export the result to the /output directory
-CMD make && cp -r output /output
+RUN make
+
+# Copy the build output to a volume that can be accessed outside the container
+CMD cp -r /buildroot/output /output
